@@ -1,0 +1,16 @@
+{
+  "experimentalServices": {
+    "frontend": {
+      "rootDirectory": "frontend",
+      "routePrefix": "/",
+      "buildCommand": "npm install && npm run build",
+      "outputDirectory": "dist"
+    },
+    "backend": {
+      "rootDirectory": "backend",
+      "routePrefix": "/api",
+      "buildCommand": "npm install",
+      "startCommand": "npm start"
+    }
+  }
+}
