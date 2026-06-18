@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Harry Potter Character Management</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0e1a2b; color: #f3f3f3; margin: 0; padding: 0; }
+    .app { max-width: 1000px; margin: 0 auto; padding: 24px; }
+    h1 { text-align: center; margin-bottom: 8px; }
+    .card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    input, select, textarea { width: 100%; padding: 10px; margin: 6px 0 12px; border-radius: 8px; border: 1px solid #334; background: #11213a; color: #f3f3f3; }
+    button { background: #8f63ff; border: none; color: white; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    button:hover { opacity: 0.9; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+    .character { position: relative; overflow: hidden; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; }
+    .character img { width: 100%; height: 210px; object-fit: cover; display: block; }
+    .character-details { padding: 14px; }
+    .character-details h2 { margin: 0 0 8px; font-size: 1.25rem; }
+    .character-details p { margin: 4px 0; color: #cbd6ff; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .actions button { flex: 1; min-width: 120px; }
+    .hidden { display: none; }
+    .error { color: #ffb3b3; margin-top: 8px; }
+    .top-bar { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card" id="loginCard">
+      <h1>Hogwarts Character Manager</h1>
+      <div>
+        <label>Username</label>
+        <input id="username" type="text" placeholder="admin" />
+        <label>Password</label>
+        <input id="password" type="password" placeholder="password" />
+        <button id="loginBtn">Login</button>
+        <div class="error" id="loginError"></div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="mainCard">
+      <div class="top-bar">
+        <div><strong id="userLabel"></strong></div>
+        <button id="logoutBtn">Logout</button>
+      </div>
+      <div class="card">
+        <h2 id="formTitle">Add New Character</h2>
+        <form id="characterForm">
+          <input type="hidden" id="characterId" />
+          <label>Name</label>
+          <input id="name" required />
+          <label>House</label>
+          <select id="house" required>
+            <option value="">Select house</option>
+            <option>Gryffindor</option>
+            <option>Slytherin</option>
+            <option>Ravenclaw</option>
+            <option>Hufflepuff</option>
+          </select>
+          <label>Role</label>
+          <input id="role" required />
+          <label>Patronus</label>
+          <input id="patronus" />
+          <label>Image</label>
+          <input id="image" type="file" accept="image/*" />
+          <button type="submit">Save Character</button>
+          <button type="button" id="resetBtn" style="background:#444;">Reset</button>
+          <div class="error" id="formError"></div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Characters</h2>
+        <div class="grid" id="characterGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const loginCard = document.getElementById('loginCard');
+    const mainCard = document.getElementById('mainCard');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginError = document.getElementById('loginError');
+    const userLabel = document.getElementById('userLabel');
+    const characterForm = document.getElementById('characterForm');
+    const characterGrid = document.getElementById('characterGrid');
+    const formTitle = document.getElementById('formTitle');
+    const resetBtn = document.getElementById('resetBtn');
+    const formError = document.getElementById('formError');
+
+    function setToken(token) {
+      localStorage.setItem('hp_token', token);
+    }
+
+    function getToken() {
+      return localStorage.getItem('hp_token');
+    }
+
+    function setUsername(name) {
+      localStorage.setItem('hp_user', name);
+    }
+
+    function getUsername() {
+      return localStorage.getItem('hp_user');
+    }
+
+    function logout() {
+      localStorage.removeItem('hp_token');
+      localStorage.removeItem('hp_user');
+      loginCard.classList.remove('hidden');
+      mainCard.classList.add('hidden');
+      loginError.textContent = '';
+      formError.textContent = '';
+      characterForm.reset();
+    }
+
+    async function apiFetch(url, options = {}) {
+      const token = getToken();
+      const headers = options.headers || {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const response = await fetch(url, { ...options, headers });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.message || 'Request failed');
+      }
+      return response.json();
+    }
+
+    async function loadCharacters() {
+      try {
+        const chars = await apiFetch('/api/characters');
+        characterGrid.innerHTML = chars.map(mapCharacterCard).join('');
+      } catch (err) {
+        if (err.message === 'Token required' || err.message === 'Invalid token') logout();
+        formError.textContent = err.message;
+      }
+    }
+
+    function mapCharacterCard(char) {
+      const image = char.image ? char.image : 'https://via.placeholder.com/500x300?text=No+Image';
+      return `
+        <div class="character">
+          <img src="${image}" alt="${char.name}" />
+          <div class="character-details">
+            <h2>${char.name}</h2>
+            <p><strong>House:</strong> ${char.house}</p>
+            <p><strong>Role:</strong> ${char.role}</p>
+            <p><strong>Patronus:</strong> ${char.patronus || 'Unknown'}</p>
+            <div class="actions">
+              <button onclick="editCharacter(${char.id})">Edit</button>
+              <button onclick="deleteCharacter(${char.id})" style="background:#ff5b5b;">Delete</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    window.editCharacter = async function(id) {
+      try {
+        const char = await apiFetch(`/api/characters/${id}`);
+        document.getElementById('characterId').value = char.id;
+        document.getElementById('name').value = char.name;
+        document.getElementById('house').value = char.house;
+        document.getElementById('role').value = char.role;
+        document.getElementById('patronus').value = char.patronus || '';
+        formTitle.textContent = 'Edit Character';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        formError.textContent = err.message;
+      }
+    };
+
+    window.deleteCharacter = async function(id) {
+      if (!confirm('Delete this character?')) return;
+      try {
+        await apiFetch(`/api/characters/${id}`, { method: 'DELETE' });
+        loadCharacters();
+      } catch (err) {
+        formError.textContent = err.message;
+      }
+    };
+
+    characterForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      formError.textContent = '';
+      const id = document.getElementById('characterId').value;
+      const formData = new FormData();
+      formData.append('name', document.getElementById('name').value);
+      formData.append('house', document.getElementById('house').value);
+      formData.append('role', document.getElementById('role').value);
+      formData.append('patronus', document.getElementById('patronus').value);
+      const imageFile = document.getElementById('image').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      try {
+        const url = id ? `/api/characters/${id}` : '/api/characters';
+        const method = id ? 'PUT' : 'POST';
+        await fetch(url, { method, headers: { Authorization: `Bearer ${getToken()}` }, body: formData });
+        characterForm.reset();
+        document.getElementById('characterId').value = '';
+        formTitle.textContent = 'Add New Character';
+        loadCharacters();
+      } catch (err) {
+        const message = err.message || 'Unable to save';
+        formError.textContent = message;
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      characterForm.reset();
+      document.getElementById('characterId').value = '';
+      formTitle.textContent = 'Add New Character';
+      formError.textContent = '';
+    });
+
+    loginBtn.addEventListener('click', async () => {
+      loginError.textContent = '';
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!username || !password) return loginError.textContent = 'Enter username and password';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.message || 'Login failed');
+        }
+        const data = await res.json();
+        setToken(data.token);
+        setUsername(data.username);
+        userLabel.textContent = `Logged in as ${data.username}`;
+        loginCard.classList.add('hidden');
+        mainCard.classList.remove('hidden');
+        loadCharacters();
+      } catch (err) {
+        loginError.textContent = err.message;
+      }
+    });
+
+    logoutBtn.addEventListener('click', logout);
+
+    function init() {
+      const token = getToken();
+      const username = getUsername();
+      if (token && username) {
+        userLabel.textContent = `Logged in as ${username}`;
+        loginCard.classList.add('hidden');
+        mainCard.classList.remove('hidden');
+        loadCharacters();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
