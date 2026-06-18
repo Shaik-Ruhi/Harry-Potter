@@ -4,17 +4,15 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  render-deploy:
+  render-deploy-hook:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v5
-        with:
-          node-version: '20'
-      - run: npm install
-      - run: npx @render/cli deploy --service-id ${{ secrets.RENDER_BACKEND_SERVICE_ID }} --api-key ${{ secrets.RENDER_API_KEY }} --wait
+      - name: Trigger Render deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+      - name: Skip Render deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL == '' }}
+        run: echo "Set RENDER_DEPLOY_HOOK_URL in GitHub repository secrets to deploy the backend."
