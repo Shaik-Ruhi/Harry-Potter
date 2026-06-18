@@ -21,6 +21,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Temporary test scripts
+backend/tmp_*
+
 # OS files
 .DS_Store
 Thumbs.db

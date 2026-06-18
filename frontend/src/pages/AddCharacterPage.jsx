@@ -20,7 +20,7 @@ const AddCharacterPage = () => {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => formData.append(key, value));
       if (image) formData.append('image', image);
-      await authAxios.post('/characters', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await authAxios.post('/characters', formData);
       navigate('/characters');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create character');

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: hp-character-backend
+    env: node
+    plan: free
+    repo: https://github.com/Shaik-Ruhi/Harry-Potter.git
+    branch: main
+    path: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+
+  - type: static-site
+    name: hp-character-frontend
+    env: node
+    plan: free
+    repo: https://github.com/Shaik-Ruhi/Harry-Potter.git
+    branch: main
+    path: frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist

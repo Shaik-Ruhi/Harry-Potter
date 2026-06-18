@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "Harry Potter API",
+    "_postman_id": "hp-api-collection",
+    "description": "Basic Postman collection for auth + CRUD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Password123\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] }
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Password123\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+      }
+    },
+    {
+      "name": "Get Characters",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/characters", "host": ["{{baseUrl}}"], "path": ["api","characters"] }
+      }
+    },
+    {
+      "name": "Create Character",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "name", "value": "Neville Longbottom", "type": "text" },
+            { "key": "house", "value": "Gryffindor", "type": "text" },
+            { "key": "wand", "value": "Holly", "type": "text" },
+            { "key": "patronus", "value": "Stag", "type": "text" },
+            { "key": "bloodStatus", "value": "Half-blood", "type": "text" },
+            { "key": "description", "value": "Brave wizard", "type": "text" },
+            { "key": "image", "type": "file", "src": "<path-to-image>" }
+          ]
+        },
+        "url": { "raw": "{{baseUrl}}/api/characters", "host": ["{{baseUrl}}"], "path": ["api","characters"] }
+      }
+    },
+    {
+      "name": "Get Character by ID",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/characters/:id", "host": ["{{baseUrl}}"], "path": ["api","characters",":id"] }
+      }
+    },
+    {
+      "name": "Update Character",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": { "mode": "formdata", "formdata": [ { "key": "name", "value": "Updated Name", "type": "text" } ] },
+        "url": { "raw": "{{baseUrl}}/api/characters/:id", "host": ["{{baseUrl}}"], "path": ["api","characters",":id"] }
+      }
+    },
+    {
+      "name": "Delete Character",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/characters/:id", "host": ["{{baseUrl}}"], "path": ["api","characters",":id"] }
+      }
+    }
+  ]
+}

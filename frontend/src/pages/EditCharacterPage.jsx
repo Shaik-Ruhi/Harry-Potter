@@ -44,7 +44,7 @@ const EditCharacterPage = () => {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => formData.append(key, value));
       if (image) formData.append('image', image);
-      await authAxios.put(`/characters/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await authAxios.put(`/characters/${id}`, formData);
       navigate(`/characters/${id}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update character');
