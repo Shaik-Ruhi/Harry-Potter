@@ -7,6 +7,7 @@ import { open } from 'sqlite';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,8 +15,14 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'hogwarts-secret';
 
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = process.env.UPLOAD_DIR || (process.env.VERCEL ? path.join(os.tmpdir(), 'uploads') : path.join(__dirname, 'uploads'));
+if (!fs.existsSync(uploadDir)) {
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  } catch (err) {
+    console.warn('Could not create upload directory:', uploadDir, err.message);
+  }
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
