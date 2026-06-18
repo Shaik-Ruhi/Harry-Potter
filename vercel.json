@@ -1,16 +1,14 @@
 {
   "experimentalServices": {
     "frontend": {
-      "rootDirectory": "frontend",
       "routePrefix": "/",
-      "buildCommand": "npm install && npm run build",
-      "outputDirectory": "dist"
+      "buildCommand": "cd frontend && npm install && npm run build",
+      "outputDirectory": "frontend/dist"
     },
     "backend": {
-      "rootDirectory": "backend",
       "routePrefix": "/api",
-      "buildCommand": "npm install",
-      "startCommand": "npm start"
+      "buildCommand": "cd backend && npm install",
+      "startCommand": "cd backend && npm start"
     }
   }
 }
