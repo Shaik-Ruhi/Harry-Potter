@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
-import os from 'os';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import characterRoutes from './routes/characterRoutes.js';
@@ -14,8 +13,7 @@ connectDB();
 const app = express();
 app.use(cors());
 app.use(express.json());
-// Use a writable uploads directory in serverless environments (e.g. Vercel)
-const uploadDir = process.env.UPLOAD_DIR || (process.env.VERCEL ? path.join(os.tmpdir(), 'uploads') : path.join(process.cwd(), 'uploads'));
+const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
   try {
     fs.mkdirSync(uploadDir, { recursive: true });
