@@ -48,3 +48,27 @@ git push -u origin main
 
 - Keep secret keys and MongoDB URI in `.env` files, which are ignored by Git.
 - For production hosting, use a platform like Vercel/Netlify for frontend and Render/Railway for backend.
+
+## GitHub Actions Deployment
+
+### Frontend
+A workflow is configured at `.github/workflows/deploy-frontend.yml` to build and publish the frontend to GitHub Pages.
+
+### Backend
+A workflow is configured at `.github/workflows/deploy-backend.yml` to trigger Render deployment with secrets:
+
+- `RENDER_API_KEY`
+- `RENDER_BACKEND_SERVICE_ID`
+
+Render CLI deployment requires adding these secrets in the GitHub repository settings.
+
+### Render setup
+1. Create a Render web service for the backend using the repo `Shaik-Ruhi/Harry_potter`.
+2. Copy the service ID from Render.
+3. Add the GitHub secrets above.
+4. Push to `main` and GitHub Actions will deploy the backend to Render.
+
+### Frontend production env
+
+- Set `VITE_API_URL` in your frontend host (Vercel/Netlify) to the backend URL (for example `https://your-backend.onrender.com`).
+- This makes the frontend call the deployed backend instead of assuming `/api` is colocated with the frontend.
